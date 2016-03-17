@@ -15,10 +15,74 @@ def sum(array)
 	array.inject(:+)
 end
 
+def makefib(limit)
+	fibs = [1,2]
+	
+	#do not exceed not strictly less so inclusive
+	while(fibs[-1]<=limit) do
+		fibs<<fibs[-1] + fibs[-2]
+		p fibs
+	end
+	fibs.pop
+	fibs
+end
+
+#genericize this to make it take any conditional - review passing blocks and that shit
+def striptoeven(oldarray)
+	newarray = []
+	oldarray.each{|x| newarray<<x if x%2==0}
+	newarray
+end
+
+def isprime(int)
+	prime = true
+	for i in 2..(int/2).to_int
+		if int%i == 0 then
+			prime = false
+		end
+	end
+	prime
+end
+
+def primesupto(int)
+	primes = []
+	for i in 2..int
+		primes << i if isprime(i)
+	end
+	primes
+end
+
+def findfactors(int)
+	array = []
+	for i in 2..(int/2).to_int
+		array << i if int%i == 0
+	end
+	array
+end
 
 
-p findmults(10,5,3)
-p sum([1,2,3,4])
-array = findmults(1000,5,3)
-p array
-p sum(array)
+
+def nofactor(array,int)
+end
+
+def breaktoprime(int)
+	total = int
+	count = 2
+	array = []
+
+	while count <= total do
+		if total%count == 0 
+			array << count
+			p array
+			total = total / count
+		else 
+			count+=1
+		end
+	end
+	return array
+end
+
+
+breaktoprime(600851475143)
+#p primesupto(356)
+#p findfactors(600851475143)
