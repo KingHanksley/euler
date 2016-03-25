@@ -74,7 +74,6 @@ def breaktoprime(int)
 	while count <= total do
 		if total%count == 0 
 			array << count
-			p array
 			total = total / count
 		else 
 			count+=1
@@ -82,6 +81,27 @@ def breaktoprime(int)
 	end
 	return array
 end
+
+def number_divisors(int)
+	total = int
+	count = 2
+	product = 1
+	this = 0
+	while count <= total do
+		if total%count == 0
+			this += 1
+			total = total / count
+			product *= (this + 1) if count > total
+		else
+			count += 1
+			product *= (this + 1)
+			this = 0
+		end
+	end
+	return product
+end
+
+
 
 def is_palin(int)
 	int.to_s.reverse == int.to_s
@@ -324,13 +344,380 @@ def loadfile(path)
 	return a
 end
 
-def highest_in_grid(grid)
-	
+def loadtext(path)
+	file = File.open(path, "r") 
+	a = []
+	file.each_line do 
+	a << line
+	end
+	p a
+	return a
 end
 
 
-p sieveupto(2000000)
-p sum sieveupto(2000000)
+def highest_in_grid(grid)
+	highest = 0
+	for row in 0..grid.length-1
+		for column in 0..grid[row].length-1
+			next if grid[row][column] == 0
+			if row >= 3
+				#"up" - check to make sure is enough space
+				product = grid[row][column]*grid[row-1][column]*grid[row-2][column]*grid[row-3][column]
+				p "new highest! #{product}, #{grid[row][column]} at #{row} by #{column} up!" if product > highest
+				highest = product if product > highest
+			end
+			if column >= 3
+				#back
+				product = grid[row][column]*grid[row][column-1]*grid[row][column-2]*grid[row][column-3]
+				p "new highest!  #{product}, #{grid[row][column]} at #{row} by #{column} back!" if product > highest
+				highest = product if product > highest
+			end
+			if column >=3 and row >=3
+				product = grid[row][column]*grid[row-1][column-1]*grid[row-2][column-2]*grid[row-3][column-3]
+				p "new highest! #{product}, #{grid[row][column]} at #{row} by #{column} back and up!" if product > highest
+				highest = product if product > highest
+			end
+			if column >= 3 and row <= grid.length - 4
+				product = grid[row][column]*grid[row+1][column-1]*grid[row+2][column-2]*grid[row+3][column-3]
+				p "new highest! #{product}, #{grid[row][column]} at #{row} by #{column} back and down!" if product > highest
+				highest = product if product > highest
+				
+			end
+		end
+	end
+
+end
+
+def triangle_divisors
+	divisors = 2
+	count = 1
+	total = 0
+	while divisors < 500
+		total += count
+		divisors = number_divisors(total)
+		p total
+		p divisors
+		count+=1 
+	end
+end
+
+def thousand_dig_fib
+	a = 1
+	b = 1
+	count = 3
+	while true do
+		c = a+b 
+		a = b
+		b = c
+		p b
+		p count
+		break if b > 10**999
+		count += 1
+	end
+end
+
+def collatz(max)
+	highest = [0,0]
+	for starting in 1..max do
+		n = starting
+		count = 1
+		while n != 1 do
+			n%2 == 0 ? n = n/2 : n = 3*n + 1
+			count +=1
+		end
+		highest = [starting,count] if count > highest[1]
+	end
+	return highest
+end
+
+def latticepaths(x,y)
+	paths = [[0,0]]
+	moves = 0
+	while moves < (x + y) do
+		newarray = []
+		paths.each do |path|
+			newarray << [path[0]+1,path[1]] if path[0] < x
+			newarray << [path[0],path[1]+1] if path[1] < y
+		end
+		paths = newarray
+		moves += 1
+	end
+	return paths.length
+end
+
+def latticepaths2(x,y)
+	destines = {[0,0]=>1}
+	#use arrays as the keys. set of coordinates is the keys, score is the other.
+	moves = 0
+	while moves < (x + y) do
+		new_destines = {}
+		destines.each do |key,value|
+			if key[0]< x
+				newcoor = [key[0]+1,key[1]]
+				new_destines[newcoor] ? new_destines[newcoor] += value : new_destines[newcoor] = value
+			end
+			if key[1] < y
+				newcoor = [key[0],key[1]+1]
+				new_destines[newcoor] ? new_destines[newcoor] += value : new_destines[newcoor] = value
+			end
+		end
+		moves += 1
+		destines = new_destines
+	end
+	return destines[[x,y]]
+end
+
+def digitsum(x)
+	x = x.to_s
+	total = 0
+	for i in 0..x.length-1 do
+		total+=x[i].to_i
+	end
+	return total
+end
+
+
+
+def ones_places(x)
+	return 0 if x==0 
+	return 3 if x>=1 and x<=2
+	return 5 if x==3
+	return 4 if x>=4 and x<=5
+	return 3 if x==6
+	return 5 if x>=7 and x<=8
+	return 4 if x==9
+end
+
+def teens(x)
+	return 3 if x==10
+	return 6 if x>=11 and x<=12
+	return 8 if x>=13 and x<=14
+	return 7 if x>=15 and x<=16
+	return 9 if x==17
+	return 8 if x>=18 and x<=19
+end
+
+def tens_places(x)
+	return ones_places(x) if x < 10	
+	return teens(x) if x < 20
+	return 6 + ones_places(x-20) if x >=20 and x<30
+	return 6 + ones_places(x-30) if x >=30 and x<40
+	return 5 + ones_places(x-40) if x >=40 and x<50
+	return 5 + ones_places(x-50) if x >=50 and x<60
+	return 5 + ones_places(x-60) if x >=60 and x<70
+	return 7 + ones_places(x-70) if x >=70 and x<80
+	return 6 + ones_places(x-80) if x >=80 and x<90
+	return 6 + ones_places(x-90) if x >=90 and x<100
+end
+
+def hundreds(x)
+	factor = x/100
+	diff = x-factor * 100
+	diff == 0 ? value = ones_places(factor) + 7 : value = ones_places(factor) + 10 + tens_places(diff)
+	return value
+end
+
+def let_count(x)
+	return(tens_places(x)) if x >= 1 and x < 100
+	return(hundreds(x)) if x >= 100 and x < 1000
+	return 11 if x == 1000
+end
+
+def euler19
+for i in 1..1000
+	p "#{i}: #{let_count(i)}"
+	sum+= let_count(i)
+end
+end
+
+def sum_divisors(x)
+	#dumb brute force way to find proper divisors, revise for good math trick if found
+	sum = 0
+	for i in 2..x**0.5-1
+		#p "#{i} + #{x/i}" if x%i ==0
+		sum+=i + x/i if x%i == 0
+	end
+	sum += x**0.5 if ((x**0.5).to_i)**2 == x
+	return sum+1
+end
+
+def amicable(max)
+	sum = 0
+	for i in 3..max do
+	 sum+= i  if sum_divisors(sum_divisors(i)) == i and i != sum_divisors(i)
+	 p "#{i} + #{sum_divisors(i)}"if sum_divisors(sum_divisors(i)) == i and i != sum_divisors(i)
+	end
+	return sum
+end
+
+
+def month_days(month,year)
+	case month
+	when "JAN"
+		return [31,"FEB"]
+	when "FEB"
+		return [29,"MAR"] if year%4==0 and year%100 > 0
+		return [29,"MAR"] if year%400 == 0
+		return [28,"MAR"] if year%100 == 0 and year%400 > 0
+		return [28,"MAR"] if year%4 > 0
+	when "MAR"
+		return [31,"APR"]
+	when "APR"
+		return [30,"MAY"]
+	when "MAY"
+		return [31, "JUN"]
+	when "JUN"
+		return [30, "JUL"]
+	when "JUL"
+		return [31, "AUG"]
+	when "AUG"
+		return [31, "SEP"]
+	when "SEP"
+		return [30, "OCT"]
+	when "OCT"
+		return [31, "NOV"]
+	when "NOV"
+		return [30, "DEC"]
+	when "DEC"
+		return [31, "JAN"]
+	end
+end
+
+def day_to_number(day)
+	case day
+	when "SUN"
+		return 0
+	when "MON"
+		return 1
+	when "TUE"
+		return 2
+	when "WED"
+		return 3
+	when "THU"
+		return 4
+	when "FRI"
+		return 5
+	when "SAT"
+		return 6
+	end
+end
+
+def number_to_day(num)
+	case num
+	when 0
+		return "SUN"
+	when 1 
+		return "MON"
+	when 2
+		return "TUE"
+	when 3
+		return "WEN"
+	when 4
+		return "THU"
+	when 5
+		return "FRI"
+	when 6
+		return "SAT"
+	end
+end
+
+def first_of_month(start,finish)
+	hits = 0
+	start["M"] ? month = start["M"] : month = "JAN"
+	start["D"] ? day = start["D"] : day = 1
+	day_week = day_to_number(start["day_week"])
+	year = start["Y"]
+	days_in_month = month_days(month,year)[0]
+	next_month = month_days(month,year)[1]
+	until [month,day,year] == finish
+		hits+= 1 if day_week%7 == 0 and day == 1
+		day+=1
+		day_week+=1
+		if day > days_in_month
+			month = next_month
+			next_month = month_days(month,year)[1]
+			days_in_month = month_days(month,year)[0]
+			day = 1
+		end
+		year += 1 if month == "JAN" and day == 1
+		p "#{number_to_day(day_week%7)} #{month} #{day} #{year}"
+	end
+
+	return hits
+end
+
+def factorial(x)
+	total = 1
+	for i in 1..x
+		total*=i
+	end
+	return total
+end
+
+def load_names(path)
+	file = File.read(path) 
+	a = file.split(",") 
+	a.map! {|each| each.gsub("\"","") }
+	p a
+	return a
+end
+
+def alphascore(letter)
+	uppers = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"]
+	return uppers.index(letter) + 1
+end
+
+def namescore(string)
+	total = 0
+	for i in 0..string.length-1
+		total+=alphascore(string[i])
+	end
+	return total
+end
+
+p namescore("COLIN")
+a = load_names("names_for_scoring.txt")
+a.sort!
+total = 0
+for i in 0..a.length-1
+	total+=namescore(a[i]) * (i+1)
+	p "#{a[i]} #{namescore(a[i])} #{i+1} #{total}"
+end
+p total
+
+
+#p digitsum (factorial(100))
+#p first_of_month({"M" => "JAN", "D" => 1, "day_week" => "TUE", "Y" => 1901},["DEC",31,2000])
+
+#p amicable(10000)
+#p sum_divisors(284)
+#p digitsum(2**1000)
+#p latticepaths(20,20)
+#p latticepaths2(20,20)
+#p collatz(1000000)
+
+#thousand_dig_fib
+
+#a = loadfile("largesumgrid.txt")
+#a.map! { |e| e[0]  }
+#p a
+#p sum(a)
+
+
+#p breaktoprime(10**30)
+#p number_divisors(2**14*3**56)
+#triangle_divisors
+
+
+
+
+#a = loadfile("2020grid.txt")
+#p a
+#highest_in_grid(a)
+
+
+#p sieveupto(2000000)
+#p sum sieveupto(2000000)
 #p primesupto_v3(50000)
 
 #p "#{a} + #{b} + #{c} = #{a + b + c} "
