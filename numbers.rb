@@ -308,6 +308,18 @@ def sieveupto(max)
 	return valid
 end
 
+def full_sieveupto(max)
+	valid = (0..max).to_a
+	valid[0] = valid[1] = nil
+	for i in 0..(max**0.5) do
+		next unless valid[i]
+		(i**2).step(max,i) do |x|
+			valid[x]=nil
+		end
+	end
+	return valid
+end
+
 def primesupto_v3(int)
 	primes = []
 	composites = []
@@ -533,12 +545,12 @@ end
 def sum_divisors(x)
 	#dumb brute force way to find proper divisors, revise for good math trick if found
 	sum = 0
-	for i in 2..x**0.5-1
+	for i in 1..x**0.5
 		#p "#{i} + #{x/i}" if x%i ==0
 		sum+=i + x/i if x%i == 0
 	end
-	sum += x**0.5 if ((x**0.5).to_i)**2 == x
-	return sum+1
+	sum -= x**0.5 if ((x**0.5).to_i)**2 == x
+	return sum - x
 end
 
 def amicable(max)
@@ -675,15 +687,242 @@ def namescore(string)
 	return total
 end
 
-p namescore("COLIN")
-a = load_names("names_for_scoring.txt")
-a.sort!
-total = 0
-for i in 0..a.length-1
-	total+=namescore(a[i]) * (i+1)
-	p "#{a[i]} #{namescore(a[i])} #{i+1} #{total}"
+def abundant_numbers(limit)
+	a = []
+	for i in 2..limit
+		a << i if sum_divisors(i) > i
+	end
+	return a		
 end
-p total
+
+def all_numbers(limit)
+	(0..limit).to_a
+end
+
+def find_nonabundants(limit)
+	all =  all_numbers(limit)
+	abundant = abundant_numbers(limit)
+	count_outer = 0
+	active_number = abundant[count_outer]
+	
+
+	until active_number > limit / 2
+		count_inner = count_outer 
+		second_number = active_number
+		until second_number + active_number > limit or count_inner>abundant.length - 1
+			second_number = abundant[count_inner]
+			all[active_number + second_number] = nil
+			count_inner+=1
+		end
+		count_outer += 1
+		active_number = abundant[count_outer]
+		p active_number
+	end
+	return all.compact
+end
+
+def lex_perms(array)
+	#enter as string of numbers
+	count = 0
+end
+
+def sortdown(array,count)
+	array.sort!
+	result = []
+	for i in 0..array.length-1
+		save = array[i]
+		newarray = array
+		newarray.delete(save)
+		p newarray
+		p (newarray.length > 1)
+		sortdown(newarray,count).each {|x| result << save + x} if newarray.length > 1
+		result << save + newarray[0] if newarray.length == 1
+		count +=1
+	end
+	p "result"
+	p result
+	return result
+end
+
+def sortdown_2(array)
+	return array if array.length == 1
+	array.sort!
+	permutes = []
+	for i in 0..(array.length - 1)
+		save = array[i]
+		ends = sortdown_2(array-[save])
+		ends.each {|x| permutes << save + x}
+	end
+	#it's not going in again on recursion
+	return permutes
+end
+
+def find_recursion(string)
+	longest = 0
+	segment = ""
+	for i in 0..string.length/2
+		for j in i..string.length/2-i
+			next_start = j+1
+			next_end = 2*j-i+1
+			if string[next_start..next_end] == string[i..j] 
+				segment = string[i..j]
+				longest = j-i 
+				return [longest,segment]
+			end
+		end
+	end
+	return [longest,segment]
+end
+
+def find_recursive_fracts(max)
+	longest = 0
+	number = 0
+	segement = ""
+	numerator = 10**2000
+	for d in 1..1000
+		info = find_recursion((numerator/d).to_s)
+		if info[0] > longest
+			longest = info[0]
+			p "new longest! #{info[0]} #{info[1]} #{d} #{numerator/d}"
+			number = d
+			segment = info[1]
+		end
+	end
+	return [number, segment]
+end
+
+
+
+def test_coefficients(range)
+ primes = full_sieveupto(10**7)
+ highest_streak = [0,0,0]
+ for a in -1*range .. range
+ 	for b in -1*range .. range
+ 		streak_alive = true
+ 		count = 0
+ 		while streak_alive do
+ 			streak_alive = false unless primes[count**2 + count*a + b]
+ 			count+=1
+ 		end
+ 		p count
+ 		highest_streak = [a,b,count-1] if count > highest_streak[2]
+ 	end
+ end
+ return highest_streak
+end
+
+def create_square(x)
+	big_array = []
+	small_array = []
+	x.times {small_array << nil}
+	x.times {big_array << small_array.dup}
+	return big_array
+end
+
+def print_array_grid(array)
+	#flawed! do not use!
+	array.each do |row|
+		printed_row = row.inject{|result, line| result.to_s + line.to_s + " x " }
+		p printed_row
+	end
+end
+
+def spiral_square(array)
+	#begin at center (array must be odd)
+	#something weird is happening with the arrays
+	count = 1
+	x = array.length / 2 
+	y = array[x].length / 2 
+	directions = ["r","d","l","u"]
+	direction = "u"
+	direction_counter = 3
+	until count > array.length**2 
+		p "#{x},#{y}, #{count}"	
+		array[y][x] = count
+		case direction
+			when "r"
+				direction_counter += 1 if x == array.length-1 or array[y+1][x] == nil
+			when "d"
+				direction_counter += 1 if y == array.length-1 or array[y][x-1] == nil
+			when "l"
+				direction_counter += 1 if x == 0 or array[y-1][x] == nil
+			when "u"
+				direction_counter += 1 if y == 0 or array[y][x+1] == nil
+			end
+			direction_counter = 0 if direction_counter == directions.length
+			direction = directions[direction_counter]
+		x += 1 if direction == "r"
+		y += 1 if direction == "d"
+		x -= 1 if direction == "l"
+		y -= 1 if direction == "u"
+		count += 1
+	end
+	return array
+end
+
+def sum_diags(square)
+	sum_total = 0 
+	for i in 0..square.length-1
+		sum_total += square[i][i]
+		p square[i][i]
+		sum_total += square[square.length - 1 - i][i]
+		#p square[square.length-1-i][i]
+	end
+	sum_total -= 1
+	return sum_total
+end
+
+def brute_force_prob_29(x)
+	powers = {}
+	for a in 2..x
+		for b in 2..x
+			power = a**b
+			powers[power.to_s] = 1
+		end
+	end
+	return powers.length
+end
+
+def dumb_brute_force_prob_30(x)
+	sums = []
+	for i in 10..x
+		sum = 0
+		number = i.to_s
+		number.each_char {|x| sum+= x.to_i**5}
+		p "#{i} #{sum}"
+		sums << i if sum == i
+	end
+	p sums
+	return sum(sums)
+end
+
+p dumb_brute_force_prob_30(1000000)
+
+#test = create_square(1001)
+#result = spiral_square(test)
+#p result
+#p sum_diags(result)
+#print_array_grid(result)
+#print_array_grid(create_square(5))
+
+
+
+#p find_recursive_fracts(1000)
+
+#p find_recursion("abcdeccdeccdeccdeccdeccdeccdec")
+#p find_recursion("cdeccdeccdec")
+#p find_recursion("cdecccccccccccc")
+#p sortdown_2(["0","1","2","3","4","5","6","7","8","9"])[10**6]
+
+#p namescore("COLIN")
+#a = load_names("names_for_scoring.txt")
+#a.sort!
+#total = 0
+#for i in 0..a.length-1
+#	total+=namescore(a[i]) * (i+1)
+#	p "#{a[i]} #{namescore(a[i])} #{i+1} #{total}"
+#end
+#p total
 
 
 #p digitsum (factorial(100))
