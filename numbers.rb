@@ -108,6 +108,8 @@ def is_palin(int)
 end
 
 
+
+
 def iterate_products
 #doesn't work as advertised
 	a = 999
@@ -679,6 +681,11 @@ def alphascore(letter)
 	return uppers.index(letter) + 1
 end
 
+def string_alphascore(string)
+	array = string.split("")
+	return array.inject(0){|total, char| total += alphascore(char)}
+end
+
 def namescore(string)
 	total = 0
 	for i in 0..string.length-1
@@ -896,8 +903,721 @@ def dumb_brute_force_prob_30(x)
 	return sum(sums)
 end
 
-p dumb_brute_force_prob_30(1000000)
 
+
+def coin_combo_2(amount)
+	viables = 0
+	for a in 0..amount/200
+		remainder = amount - 200*a
+		p "#{a} 200p" if remainder == 0
+		viables+=1 if remainder == 0
+		next unless remainder > 0
+		for b in 0..amount/100
+			remainder = remainder - 100*b
+			p "#{a} 200p #{b} 100 p" if remainder == 0
+			viables+=1 if remainder == 0
+			next unless remainder > 0
+			for c in 0..amount/50
+				remainder = remainder - 50*c
+				p "#{a} 200p #{b} 100 p #{c} 50p" if remainder == 0
+				viables+=1 if remainder == 0
+				next unless remainder > 0
+				for d in 0..amount/20
+					remainder = remainder - 20*d
+					p "#{a} 200p #{b} 100 p #{c} 50p #{d} 20p" if remainder == 0
+					viables +=1 if remainder == 0
+					next unless remainder > 0
+					for e in 0..amount/10
+						remainder = remainder - 10*d
+						p "#{a} 200p #{b} 100 p #{c} 50p #{d} 20p #{e} 10p" if remainder == 0
+						viables +=1 if remainder == 0
+						next unless remainder > 0
+						for f in 0..amount/5
+							remainder = remainder - 5*d
+							p "#{a} 200p #{b} 100 p #{c} 50p #{d} 20p #{e} 10p #{f} 5p" if remainder == 0
+							viables +=1 if remainder == 0
+							next unless remainder > 0
+							for g in 0..amount/2
+								remainder = remainder - 2*d
+								p "#{a} 200p #{b} 100 p #{c} 50p #{d} 20p #{e} 10p #{f} 5p #{g} 2p" if remainder == 0
+								viables +=1 if remainder == 0
+								next unless remainder > 0
+								p p "#{a} 200p #{b} 100 p #{c} 50p #{d} 20p #{e} 10p #{f} 5p #{g} 2p #{remainder} 1p" if remainder > 0
+								viables += 1 if remainder > 0
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+	return viables
+end
+
+
+def total_hash(hash)
+	total = 0
+	hash.each {|key, value| total+= key.to_i*value}
+	return total
+end 
+
+def coin_combo_hash(total)
+	combos = []
+	coin_hash = {"200"=> 0, "100"=> 0, "50"=> 0, "20" => 0, "10" => 0, "5" => 0, "2" => 0, "1" => 0}
+	combos < coin_hash.dup
+	
+
+	combos.each do |hash|
+		diff = total - total_hash(hash)
+		temp_combos = []
+		for i in 1..diff/200
+			temp_hash = hash.dup
+			temp_hash["200"=>i]
+			temp_combos << temp_hash.dup
+		end
+	end
+	combos << temp_combos
+end
+
+def coin_combo_by_numbers(max)
+	coin_array = [200,100,50,20,10,5,2,1]
+	results_hash = {"0"=> 1}
+	coin_array.each do |coin_value|
+		new_hash = {}
+		results_hash.each do |key,value|
+			total = key.to_i
+			(total..max).step(coin_value) do |x|
+				new_hash[x.to_s] ? new_hash[x.to_s]+= value : new_hash[x.to_s] = value
+			end
+		end
+		p "coin value #{coin_value} updating hash to #{new_hash}"
+		results_hash = new_hash
+	end
+	return results_hash
+end
+
+#p coin_combo_by_numbers(200)
+
+def is_pan_dig?(string)
+	for i in 1..9
+		return false unless string.count(i.to_s) == 1
+	end
+	return false unless string.count("0") == 0
+	true
+end
+
+def is_pan_dig_var?(string)
+	string = string.to_s
+	return false if string.length < 1
+	for i in 1..string.length
+		return false unless string.count(i.to_s) == 1
+	end
+	true
+end
+			
+
+
+
+def pan_dig_prod
+	mult_sets = []
+	prods = []
+	for a in 1..9
+		amin = 1000/a
+		amax = 9999/a
+		for b in 1000..9999
+			next unless b > amin and b < amax
+			test_set = a.to_s + b.to_s + (a*b).to_s
+			mult_sets << "#{a} x #{b} = #{a*b}" if is_pan_dig?(test_set)
+			prods << a*b if is_pan_dig?(test_set)
+		end
+	end
+
+	for a in 10..99
+		amin = 1000/a
+		amax = 9999/a
+		for b in 100..999
+			next unless b > amin and b < amax
+			test_set = a.to_s + b.to_s + (a*b).to_s
+			mult_sets << "#{a} x #{b} = #{a*b}" if is_pan_dig?(test_set)
+			prods << a*b if is_pan_dig?(test_set)
+		end
+	end
+
+	for a in 100..999
+		amin = 100/a
+		amax = 999/a
+		for b in 100..999
+			next unless b > amin and b < amax
+			test_set = a.to_s + b.to_s + (a*b).to_s
+			mult_sets << "#{a} x #{b} = #{a*b}" if is_pan_dig?(test_set)
+			prods << a*b if is_pan_dig?(test_set)
+		end
+	end
+	return sum(prods.uniq)
+end
+
+def find_curious_fractions
+	nums = 1
+	denoms = 1
+	for a in 10..99
+		next if a%10 == 0 
+		for b in a+1..99
+			a_s = a.to_s
+			b_s = b.to_s
+			for place in 0..1
+				if b_s.count(a_s[place]) == 1
+					a_mod = a_s[place-1]
+					b_mod = b_s.delete(a_s[place])
+					p "hit! #{a} #{b}"  if a.to_f / b.to_f == a_mod.to_f / b_mod.to_f
+					nums *= a_mod.to_f if a.to_f / b.to_f == a_mod.to_f / b_mod.to_f
+					denoms *= b_mod.to_f if a.to_f / b.to_f == a_mod.to_f / b_mod.to_f
+				end
+			end
+		end
+	end
+	return [nums, denoms]
+end
+
+def fast_fact(dig)
+	case dig
+	when 0
+		return 1
+	when 1
+		return 1
+	when 2 
+		return 2
+	when 3 
+		return 6
+	when 4 
+		return 24
+	when 5 
+		return 120
+	when 6
+		return 720
+	when 7
+		return 5040
+	when 8
+		return 40320
+	when 9
+		return 362880
+	end
+end
+
+def factorial(dig)
+	factor = 1
+	for i in 2..dig
+		factor *= i
+	end
+	return factor
+end
+
+def find_curious_factorials(max)
+	for i in 3..max 
+		sum = 0
+		i.to_s.each_char {|c| sum+= fast_fact(c.to_i)}
+		p "curious! #{i}" if sum == i
+		p "progress: #{i}" if i%10000 == 0
+	end
+end
+
+def is_candidate?(prime_string)
+	return false if prime_string.count("245680") > 0
+	true
+end
+
+
+def find_circular_primes(max)
+	circs = [2,5]
+	primes = full_sieveupto(max)
+	compact = primes.compact
+	compact.each do |x|
+		x = x.to_s
+		next unless is_candidate?(x)
+		still_good = true
+		#next unless is_candidate?(x)
+		x.length.times do
+			x[x.length]=x[0]
+			x[0]=""
+			still_good = false unless primes[x.to_i]
+		end
+		circs << x.to_i if still_good
+	end
+	return circs
+end
+
+def find_double_palin(max)
+	double_pals = []
+	for i in 1..max
+		bin = i.to_s(2)
+		next if bin[0]=="0"
+		double_pals << i if is_palin(bin) and is_palin(i)
+	end
+	return double_pals
+end
+
+def find_truncatable_primes(max)
+	truncs = []
+	primes = full_sieveupto(max)
+	compact = primes.compact
+	compact.each do |x|
+		x = x.to_s
+		next if x.length == 1
+		still_good = true
+		for i in 1..x.length-1
+			left_slice = x[0..i-1]
+			right_slice = x[i..x.length-1]
+			still_good = false unless primes[left_slice.to_i] and primes[right_slice.to_i]
+		end
+		truncs << x.to_i if still_good
+	end
+	return truncs
+end
+
+def pan_dig_mult(x)
+	return false if x < 1
+	concat = ""
+	count = 1
+	while concat.length < 9
+		concat << (count*x).to_s
+		count += 1
+	end
+	return concat.to_i if is_pan_dig?(concat)
+	return false
+end
+
+def biggest_pan_dig_mult(max)
+	biggest = 123456789
+	for i in 1..max 
+		next unless i.to_s[0] >= biggest.to_s[0]
+		mult = pan_dig_mult(i)
+		next unless mult
+		p "pandigital multiple! #{i} #{mult}"
+		biggest = mult if mult > biggest
+	end
+	return biggest
+end
+
+def prob_39
+	max = 3
+	point = 120
+	for p in 0..1000
+		hits = 0
+		for a in 1..(p/3)
+			for b in a..((p-a)/2)
+				c = p-a-b
+				if a**2 + b**2 == c**2
+					hits+=1
+					p "a hit! perimeter #{p}, #{a},#{b},#{c}"
+				end
+			end
+		end
+		if hits > max
+			point = p 
+			max = hits
+			p "new high! perimeter #{p} with #{hits} hits"
+		end
+	end
+	return point
+end
+
+def champer(max)
+	string = ""
+	count = 1
+	until string.length>=max
+		string << count.to_s
+		count+=1
+	end
+	return "0." + string
+end
+
+def prob_40
+	string = ""
+	count = 1
+	until string.length>=1000000
+		string << count.to_s
+		count+=1
+	end
+	return string[0].to_i * string[9].to_i * string[99].to_i * string[999].to_i * string[9999].to_i * string[99999].to_i * string[999999].to_i
+end
+
+
+
+def clear_sieveupto(max)
+	valid = (0..max).to_a
+	p "initialized"
+	valid[0] = valid[1] = nil
+	for i in 0..(max**0.5) do
+		next unless valid[i]
+		(i**2).step(max,i) do |x|
+			valid[x]=nil
+		end
+	end
+	valid.compact!
+	return valid
+end
+
+def hash_sieveupto(max)
+	hash_primes = (0..max).inject({}){|h,i| h[i] = true; h}
+	p "initialized"
+	hash_primes.delete(0)
+	hash_primes.delete(1)
+	for i in 0..(max**0.5) do
+		next unless hash_primes[i]
+		(i**2).step(max,i) do |x|
+			hash_primes.delete(x)
+		end
+	end
+	return hash_primes
+end
+
+def prob_41
+	highest = 0
+	primes = sieveupto(10**7)
+	primes.each do |p|
+		next unless is_pan_dig_var?(p)
+		highest = p if p>highest
+		p "new highest! #{p}"
+	end
+	return highest
+end
+
+def n_triangles(n)
+	tris = []
+	count = 1
+	n.times do
+		tris << (count * (count + 1))/2
+		count += 1
+	end
+	return tris
+end
+
+def n_pentagonals(n)
+	pents = []
+	count = 1
+	n.times do
+		pents << (count * (3*count -1))/2
+		count += 1
+	end
+	return pents
+end
+
+def n_pentagonals_hash(n,count=1)
+	pents = {}
+	n.times do
+		pents[(count * (3*count -1))/2] = true
+		count += 1
+	end
+	return pents
+end
+
+def n_hexagonals_hash(n,count=1)
+	hexes = {}
+	n.times do
+		hexes[count * (2*count -1)] = true
+		count += 1
+	end
+	return hexes
+end
+
+def n_triangles_hash(n,count=1)
+	tris = {}
+	n.times do
+		tris[(count)*(count+1)/2] = true
+		count +=1
+	end
+	return tris
+end
+
+def prob_42
+	names = load_names("words.txt")
+	tris = n_triangles(100)
+	tri_names = []
+	names.each do |name|
+		tri_names << name if tris.index(string_alphascore(name))
+	end
+	return [tri_names,tri_names.length]
+end
+
+def is_pan_dig_09?(string)
+	return false unless string.length == 10
+	for i in 0..9
+		return false unless string.count(i.to_s) == 1
+	end
+	true
+end
+
+def div_primes_order_43(string)
+	return false unless (string[3]).to_i % 2 == 0
+	return false unless (string[2..4]).to_i % 3 == 0
+	return false unless (string[4..6]).to_i % 7 == 0
+	return false unless (string[5..7]).to_i % 11 == 0
+	return false unless (string[6..8]).to_i % 13 == 0
+	return true
+end
+
+def prob_43_too_slow
+	candidates = []
+	#for i in 1234567890..9876543210
+	1234567901.step(9876543210,17) do |i|
+		i = i.to_s
+		next unless i[5] == "5"
+		next unless i[6..8].to_i % 13 == 0
+		next unless i[5..7].to_i % 11 == 0
+		next unless i[3].to_i % 2 ==0
+		next unless (i[2] + i[3] + i[4]).to_i % 3 == 0
+		next unless is_pan_dig_09?(i)
+		p i
+		candidates << i
+	end
+	return [sum(candidates),candidates]
+end
+
+def fo_through_six
+	possibles = []
+	a = [0,2,4,6,8]
+	a.each do |a|
+		for b in 0..9
+			next if b == 5
+			next if a == b
+			possibles << a.to_s + b.to_s + "5" 
+		end
+	end
+	return possibles
+end
+
+def last_three
+	possibles = []
+	17.step(999,17) do |x|
+		x = "0" + x.to_s if x < 100 
+		x = x.to_s
+		next if x[0] == x[1] or x[1] == x[2] or x[0] == x[2]
+		possibles << x
+	end
+	return possibles
+end
+
+def sev_through_ten
+	possibles = []
+	suffixes = last_three
+	for i in 0..9
+		i = i.to_s
+		suffixes.each do |num|
+			inter = i + num[0..1]
+			full = i + num
+			possibles << full if inter.to_i%13 == 0
+		end
+	end
+	return possibles
+end
+
+def fused_ends
+	possibles = []
+	fronts = fo_through_six
+	backs = sev_through_ten
+	fronts.each do |pre|
+		backs.each do |suf|
+			fused = pre + suf
+			next unless fused[2..4].to_i%11==0
+			next unless fused[1..3].to_i%7==0
+			possibles << fused
+		end
+	end
+	return possibles
+end
+
+def real_candidates
+	possibles = []
+	backs = fused_ends
+	for i in 12..999
+		i = "0" + i.to_s if i < 100
+		i = i.to_s
+		backs.each do |back|
+			full_num = i + back 
+			next unless back.count(i) == 0
+			next unless full_num[2..4].to_i%3 == 0
+			next unless is_pan_dig_09?(full_num)
+			possibles << full_num.to_i
+		end
+	end
+	return possibles
+end
+
+def prob_44
+	pairs = []
+	lowest = 100000000
+	set = n_pentagonals(4000)
+	set.each do |k|
+		p "#{k}"
+		set.each do |j|
+			next unless k > j
+			next if k+j>set[-1]
+			next if k-j > lowest
+			next unless set.index(k-j)
+			next unless set.index(k+j)
+			p "pair found #{k} and #{j}"
+			lowest = (k-j) if (k-j) < lowest
+		end
+	end
+	return [lowest, pairs]
+end
+
+def prob_44_2
+	pairs = []
+	lowest = 10000000000
+	set = n_pentagonals(10000)
+	for b in 0..set.length-1
+		p b
+		sliced = set[0..b*1.5]
+		for a in 0..b
+			j = set[a]
+			k = set[b]
+			next if k-j > lowest
+			next unless sliced.index(k+j)
+			next unless sliced.index(k-j)
+			p "pair found #{k} and #{j}"
+			lowest = k-j
+			pairs << [k,j]
+		end
+	end
+	return [lowest, pairs]
+end
+
+def find_patterns_pent
+	pairs = []
+	sums = []
+	differences = []
+	lowest = 10000000000
+	set = n_pentagonals(1000)
+	for b in 0..set.length-1
+		p b
+		sliced = set[0..b*1.5]
+		for a in 0..b
+			j = set[a]
+			k = set[b]
+			next if k-j > lowest
+			sums << [k,j] if sliced.index(k+j)
+			differences  << [k,j] if sliced.index(k-j)
+		end
+	end
+	return [sums,differences]
+end
+
+
+def diffs(array)
+	diffs = []
+	for i in 0..array.length-2
+		diffs << array[i+1] - array[i]
+	end
+	return diffs
+end
+
+def prob_44_hash
+	pairs = []
+	lowest = 1000000000
+	set = n_pentagonals_hash(10000)
+	set.each do |key,value|
+		p "#{key}"
+		set.each do |second_key,second_value|
+			next unless key > second_key
+			next if key-second_key > lowest
+			next unless set[key+second_key]
+			next unless set[key-second_key]
+			p "pair found #{key} and #{second_key}"
+			lowest = (key-second_key) if (key-second_key) < lowest
+		end
+	end
+	return lowest
+end
+
+
+
+def prob_45(n)
+	hex_n = n/2+1
+	pent_n = n*3/5
+	trigroup = n_triangles_hash(n,286)
+	pentgroup = n_pentagonals_hash(pent_n,166)
+	hexgroup = n_hexagonals_hash(hex_n,144)
+	hexgroup.each do |key,value|
+		next unless pentgroup[key]
+		next unless trigroup[key]
+		p key 
+	end
+end
+
+prob_45(100000)
+
+#p n_triangles_hash(100,285)
+#p n_pentagonals_hash(100,165)
+#p n_hexagonals_hash(100,143)
+
+#pents = n_pentagonals_hash(10000)
+#p pents
+#p prob_44_2
+
+#p prob_44
+ 
+#p n_pentagonals(100)
+
+#p sum(real_candidates)
+#p real_candidates
+#p fused_ends
+#p sev_through_ten
+#p fo_through_six
+#p last_three
+#p prob_43
+#p prob_42
+
+
+#p load_names("words.txt")
+#p n_triangles(100)
+#p string_alphascore("DAVID")
+#p prob_41
+#p prob_40
+
+#p champer(1000)
+
+#p prob_39
+#p biggest_pan_dig_mult(1000000)
+
+#p pan_dig_mult(1)
+#p pan_dig_mult(2)
+#p pan_dig_mult(192)
+#p pan_dig_mult(193)
+
+
+
+#p sum(find_truncatable_primes(1000000))
+
+#palins = find_double_palin(1000000)
+#p palins
+#p sum(palins)
+
+
+#p find_circular_primes(10000000).length
+
+#p full_sieveupto(1000)
+#p full_sieveupto(1000)[0]
+#p full_sieveupto(1000)[144]
+#p full_sieveupto(1000)[179]
+#p find_circular_primes(1000000).length
+		
+	
+			
+
+				
+#p find_curious_fractions
+#p pan_dig_prod
+#p is_pan_dig?("123456789")
+#p is_pan_dig?("11235546879")
+#p is_pan_dig?("12345678")
+#p is_pan_dig?("987456312")
+#p total_hash({"200"=>1,"100"=>2,"50"=>3})
+
+
+#p coin_combo_2(200)
+
+
+#p dumb_brute_force_prob_30(1000000)
 #test = create_square(1001)
 #result = spiral_square(test)
 #p result
