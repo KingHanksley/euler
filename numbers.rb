@@ -1532,7 +1532,7 @@ end
 
 
 def prob_45(n)
-	hex_n = n/2+1
+	hex_n = n/2
 	pent_n = n*3/5
 	trigroup = n_triangles_hash(n,286)
 	pentgroup = n_pentagonals_hash(pent_n,166)
@@ -1540,11 +1540,67 @@ def prob_45(n)
 	hexgroup.each do |key,value|
 		next unless pentgroup[key]
 		next unless trigroup[key]
-		p key 
+		return key 
 	end
 end
 
-prob_45(100000)
+def odd_composites_up_to(n)
+	odd_comps=[]
+	primes = full_sieveupto(n)
+	(9..primes.length-1).step(2) do |x|
+		odd_comps << x if primes[x] == nil
+	end
+	return [odd_comps,primes]
+end
+
+def dub_squares_up_to(max)
+	count = 1
+	sq = 2
+	dub_squares = []
+	until sq > max
+		dub_squares << sq
+		count+=1
+		sq = 2*(count**2)
+	end
+	return dub_squares
+end
+
+def prob_46(max)
+	lists = odd_composites_up_to(max)
+	odd_comps = lists[0]
+	primes = lists[1]
+	dub_squares = dub_squares_up_to(max*2)
+	misses = []
+	odd_comps.each do |odd|
+		found = false
+		dub = 2
+		count = 0
+		until dub > odd do 
+			dub = dub_squares[count]
+			diff = odd - dub
+			if primes[diff] 
+				p "match found! #{odd} = #{dub} + #{diff}"
+				found = true
+			end
+			count += 1
+		end
+		p "full miss! #{odd}!" unless found
+		break unless found
+	end
+end
+
+prob_46(1000000)
+
+
+
+
+#p dub_squares_up_to(1000)
+#p odd_composites_up_to(1000)
+
+
+
+
+#prob_45(100000)
 
 #p n_triangles_hash(100,285)
 #p n_pentagonals_hash(100,165)
