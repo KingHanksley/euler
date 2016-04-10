@@ -82,6 +82,22 @@ def breaktoprime(int)
 	return array
 end
 
+def break_to_uniq_prime(int)
+		total = int
+	count = 2
+	array = []
+
+	while count <= total do
+		if total%count == 0 
+			array << count
+			total = total / count
+		else 
+			count+=1
+		end
+	end
+	return array.uniq
+end
+
 def number_divisors(int)
 	total = int
 	count = 2
@@ -353,10 +369,20 @@ def loadfile(path)
 	line.map!{|x|x.to_i}
 	a << line
 	end
-	
 	p a
 	return a
 end
+
+def loadtextfile(path)
+	file = File.open(path, "r") 
+	a = []
+	file.each_line do |line|
+	line = line.split(" ")
+	a << line
+	end
+	return a
+end
+	
 
 def loadtext(path)
 	file = File.open(path, "r") 
@@ -661,6 +687,7 @@ def first_of_month(start,finish)
 end
 
 def factorial(x)
+	return 1 if x == 0
 	total = 1
 	for i in 1..x
 		total*=i
@@ -761,6 +788,19 @@ def sortdown_2(array)
 		ends.each {|x| permutes << save + x}
 	end
 	#it's not going in again on recursion
+	return permutes
+end
+
+def sortdown_ints(array)
+	#same as sortdown_2, but returns ints instead of strings
+	return array if array.length == 1
+	array.sort!
+	permutes = []
+	for i in 0..(array.length - 1)
+		save = array[i]
+		ends = sortdown_2(array-[save])
+		ends.each {|x| permutes << (save + x).to_i}
+	end
 	return permutes
 end
 
@@ -1582,6 +1622,7 @@ def prob_46(max)
 				p "match found! #{odd} = #{dub} + #{diff}"
 				found = true
 			end
+			break if found
 			count += 1
 		end
 		p "full miss! #{odd}!" unless found
@@ -1589,13 +1630,440 @@ def prob_46(max)
 	end
 end
 
-prob_46(1000000)
+
+def prob_47
+	primes = sieveupto(10**5)
+	running_total = 0
+	for i in 0..10**6
+		number_of_primes = break_to_uniq_prime(i).length
+		if number_of_primes == 4
+			running_total += 1
+		else
+			running_total = 0
+		end
+		p "total up to #{running_total} at #{i}" if running_total > 2
+		break if running_total == 4
+	end
+end
+
+def self_powers (int)
+	total = 0
+	for i in 1..int
+		total += i**i
+	end
+	return total
+end
+
+def four_digit_primes
+	source = full_sieveupto(9999)
+	#gets primes, including nil values, from previously created Eratosthenes sieve
+	#keeps nil values for easier cutting down of sieve
+	clip = source[1000..9999]
+	#cuts down to the four digit range
+	return clip.compact
+	#compacts down to remove nil values and returns
+end
+
+
+def except_for(index,array)
+	newarray = []
+	for i in 0..array.length-1
+		newarray << array[i] unless i == index
+	end
+	return newarray
+end
+
+
+def get_permutations(array)
+	#must be an array of strings
+	return array if array.length == 1
+	possibles = []
+	for i in 0..array.length-1
+		first = array[i]
+		rest = except_for(i,array)
+		endings = get_permutations(rest)
+		endings.each {|ending| possibles << first + ending}
+	end
+	return possibles.uniq
+end
+
+#p get_permutations(["1"])
+#p get_permutations(["1","2"])
+#p get_permutations(["1","2","2","3"])
+
+def permute_string(string)
+	return get_permutations(string.split(""))
+end
+
+def permute_int(int)
+	string = int.to_s 
+	array = get_permutations(string.split(""))
+	return array.map{|element|element.to_i}
+end
+
+#p permute_int(1334)
+
+
+def prob_49
+	#in pseudocode
+	#Step 1: get array of all primes in four-digit range
+	primes = sieveupto(9999)
+	p primes
+	#Step 2: iterate through the primes, checking
+	primes.each do |prim|
+	
+		permutations = permute_int(prim)
+		#use my previously created method to return all lexicographic permutations of prim
+		prime_permutations = permutations & primes
+		#reduceds to the intersection of primes and permutations
+		prime_permutations.each do |perm|
+			next if prim >= perm
+			diff = perm-prim
+			p "match! #{prim}, #{perm}, #{perm+diff}" if prime_permutations.index(perm + diff)
+			#find a match IF we can add the difference again and still come up with a hit (right?)
+		end
+	end
+end
+
+def prob_50(max)
+	index = full_sieveupto(max)
+	primes = index.dup.compact
+	highest = [0,0,0]
+	for i in 0..primes.length
+		break if primes[i] > (max/2)
+		depth = 0
+		sum = primes[i]
+		while sum < max	
+			sum = 0
+			depth += 1
+			for d in 0..depth
+				sum+= primes[i+d]
+			end
+			highest = [depth+1,sum,i] if depth > highest[0] and index[sum]
+			p highest if depth == highest[0] and index[sum]
+		end
+		
+	end
+	return highest
+end
+
+def find_slots(digits)
+	possibles = [[]]
+	for i in 0..(digits-1)
+		nextround = []
+		possibles.each do |set|
+			nextround << set.dup
+			nextround << (set << i)
+		end
+		possibles = nextround.uniq
+	end
+	possibles.delete([])
+	last = (0..digits-1).to_a
+	possibles.delete(last)
+	return possibles
+end
+
+def zero_string(int,sig_dig)
+	string = int.to_s
+	return string if string.length == sig_dig
+	diff = sig_dig - string.length
+	diff.times {string = "0" << string}
+	return string
+end
+
+#p zero_string(343,3)
+#p zero_string(3,3)
+#p zero_string(32,3)
+
+def combine_grids(grid,digits)
+	remainder = (0..digits-1).to_a - grid
+	rem_dig = remainder.length
+	max = 10**(rem_dig)-1
+	families = []
+	for i in 0..max
+		next if i == 0 and remainder[0] == 0
+		family = []
+		string = "x"*digits 
+		constant_partial = zero_string(i,rem_dig)
+		for j in 0..rem_dig-1
+			string[remainder[j]] = constant_partial[j]
+		end
+		for k in 0..9
+			next if k==0 and grid[0] == 0
+			grid.each {|g| string[g] = k.to_s}
+			family << string.dup.to_i unless string[0] == "0"
+		end
+		families << family
+	end
+	return families
+end
+
+def check_primes_1(family)
+	digits = family[0].to_s.length
+	grid = full_sieveupto(10**digits)
+	count = 0
+	family.each {|value| count+=1 if grid[value]}
+	return count	
+end
+
+def check_primes_mult_families(families,target,digits)
+	grid = full_sieveupto(10**digits)
+	families.each do |family|
+		count = 0
+		family.each{|value| count+=1 if grid[value]}
+		p "hit! #{family}" if count == target
+	end
+end
 
 
 
+#test_grid = combine_grids([0],2)
+#p test_grid
+#check_primes_mult_families(test_grid,6)
+
+def prob_51(max,target)
+	for i in 2..max
+		grids = find_slots(i)
+		mega = []
+		p i
+		p grids
+		grids.each do |grid|
+			round = combine_grids(grid,i)
+			mega += round.dup
+		end
+		p "checking #{target} #{i}"
+		check_primes_mult_families(mega,target,i)
+	end
+end
+
+#prob_51(6,8)
+#p combine_grids([2,3],5)
+#p check_primes_1([56003, 56113, 56223, 56333, 56443, 56553, 56663, 56773, 56883, 56993])
+
+def find_families(max_digits)
+end
+
+def prob_52(max)
+	for i in 0..max 
+		s = i.to_s
+		next if s[0].to_i > 1
+		next if s[1].to_i > 6
+		l = s.length
+		for j in 2..6
+			break unless (i * j).to_s.count(s) == l
+			p "made it to #{j} #{i} #{i*j}" if j > 3
+		end
+	end
+end
+
+def factorials_up_to(max)
+	array = []
+	for i in 0..max 
+		array[i] = factorial(i)
+	end
+	return array
+end
+
+def prob_53
+	fact_array = factorials_up_to(100)
+	millions = []
+	for n in 23..100
+		for r in 1..n-1
+			ncr = fact_array[n]/(fact_array[r]*fact_array[n-r])
+			p "#{n}C#{r} = #{ncr}" if ncr > 10**6
+			millions << ncr if ncr > 10**6
+		end
+	end
+	return millions
+end
+
+
+def poker_hand(hand)
+	#takes a 5-card poker hand, returns a value
+	value = {"category"=>"high","high"=>"2", "first_kicker"=>"2", "second_kicker"=>"2", "third_kicker"=>"2", "fourth_kicker"=>"2"}
+	flush = false
+	straight = false
+	count = {"2"=>0,"3"=>0,"4"=>0,"5"=>0,"6"=>0,"7"=>0,"8"=>0,"9"=>0,"T"=>0,"J"=>0,"Q"=>0,"K"=>0,"A"=>0}
+	suitcount = {"H"=>0,"S"=>0,"C"=>0,"D"=>0}
+	card_order = ["A","2","3","4","5","6","7","8","9","T","J","Q","K","A"]
+	suits = ["H","C","S","D"]
+	hand.each do |card|
+		count[card[0]] += 1
+		suitcount[card[1]] += 1
+	end
+	#check for straight
+
+	#check for flush
+	suits.each do |suit|
+		if suitcount[suit]>=5
+			flush = true
+		end
+	end
+
+	for i in 0..card_order.length-5
+		if count[card_order[i]] >= 1 and count[card_order[i+1]] >= 1 and count[card_order[i+2]] >= 1 and count[card_order[i+3]] >= 1 and count[card_order[i+4]] >= 1
+			straight = true
+			value["high"] = card_order[i+4]
+			value["first_kicker"] = card_order[i+3]
+			value["second_kicker"] = card_order[i+2]
+			value["third_kicker"] = card_order[i+1]
+			value["fourth_kicker"] = card_order[i]
+		end
+	end
+
+	if count.key(4)
+		value["category"] = "fourkind"
+		value["high"] = count.key(4)
+	elsif count.key(3) and count.key(2)
+		value["category"] = "fullhouse"
+		value["high"] = count.key(3)
+		value["first_kicker"] = count.key(2)
+	elsif count.key(3) 
+		value["category"] = "threekind"
+		value["high"] = count.key(3)
+		without_k1 = count.dup
+		without_k1.delete(count.key(1))
+		value["second_kicker"] = count.key(1)
+		value["first_kicker"] = without_k1.key(1)
+	elsif count.key(2) 
+		without_pair = count.dup
+		without_pair.delete(count.key(2))
+		if without_pair.key(2)
+			value["category"] = "twopair"
+			value["high"] = without_pair.key(2)
+			value["first_kicker"] = count.key(2)
+			value["second_kicker"] = count.key(1)
+		else 
+			value["category"] = "onepair"
+			value["high"] = count.key(2)
+		end
+	end
+
+
+	value["category"] = "straightflush" if flush and straight
+	value["category"] = "flush" if flush and (not straight)
+	value["category"] = "straight" if straight and (not flush)
+
+	unless value["category"] == "fullhouse" or value["category"] == "threekind" or value["category"] == "twopair"
+		kicker_level = 0
+		kicker_level = 1 if value["category"] == "onepair"
+		for i in 1..card_order.length
+			pos = card_order.length-i
+			if count[card_order[pos]] == 1
+				kicker_level+=1
+				case kicker_level
+				when 1 
+					value["high"] = card_order[pos]
+				when 2 
+					value["first_kicker"] = card_order[pos]
+				when 3 
+					value["second_kicker"] = card_order[pos]
+				when 4 
+					value["third_kicker"] = card_order[pos]
+				when 5 
+					value["fourth_kicker"] = card_order[pos]
+				end
+			end
+		end
+	end
+	return value
+end
+
+def hand_score(value)
+	score = 0
+	rankings = ["fourth_kicker","third_kicker","second_kicker","first_kicker","high"]
+	hands = ["high","onepair","twopair","threekind","straight","flush","fullhouse","fourkind","straightflush"]
+	card_order = ["2","3","4","5","6","7","8","9","T","J","Q","K","A"]
+	score += 10**16 * hands.index(value["category"])
+	for i in 0..rankings.length-1
+		score += card_order.index(value[rankings[i]]) * (10**(i*2))
+	end
+	return score
+end
+
+
+
+p a = poker_hand(["5S","6S","7S","8S","9S"])
+p hand_score(a)
+p b = poker_hand(["3S","5S","4S","KS","AS"])
+p hand_score(b)
+p c = poker_hand(["KC","TD","QS","AH","JH"])
+p hand_score(c)
+p d = poker_hand(["KC","KD","3S","4C","7D"])
+p hand_score(d)
+p e = poker_hand(["KC","KD","AC","AD","AH"])
+p hand_score(e)
+p f = poker_hand(["KC","KD","AC","AD","TH"])
+p hand_score(f)
+p g = poker_hand(["KC","KD","KS","4C","7D"])
+p hand_score(g)
+p h = poker_hand(["KC","TD","8S","4C","7D"])
+p hand_score(h)
+
+def prob_54
+	hands = loadtextfile("p054_poker.txt")
+	player_1_score = 0
+	player_2_score = 0
+	ties = 0
+	hands.each do |hands|
+		player_1_hand = hands[0..4]
+		player_2_hand = hands[5..9]
+		player_1_value = hand_score(poker_hand(player_1_hand))
+		player_2_value = hand_score(poker_hand(player_2_hand))
+		p player_1_hand
+		p poker_hand(player_1_hand)
+		p player_1_value
+		p player_2_hand
+		p poker_hand(player_2_hand)
+		p player_2_value
+		player_1_score += 1 if player_1_value > player_2_value
+		player_2_score += 1 if player_2_value > player_1_value
+		ties+= 1 if player_1_value == player_2_value
+		p "tie!" if player_1_value == player_2_value
+	end
+	p player_1_score
+	p player_2_score
+	p ties
+end
+
+prob_54
+
+
+
+
+#p prob_53.length
+
+
+#prob_52(10**7)
+
+
+
+#p prob_50(10**6)
+#my permutation method doesn't work if there are repeating numbers!
+
+
+
+#removed optimization (doesn't work properly) from prob_49
+#checked_already[perm] = true
+			#marks off that this has been checked
+			#wait! this is flawed
+	#checked_already = (0..9999).to_a
+	#checked_already.fill(nil)
+	#create array to store values already checked
+	#NOTE: perm will always be higher, because we start with lower values of prim, and don't check duplicates
+		#next if checked_already[prim]
+		#skips if it was already part of another permutation
 
 #p dub_squares_up_to(1000)
 #p odd_composites_up_to(1000)
+#p four_digit_primes
+#p four_digit_primes.compact
+#p four_digit_primes.compact.length
+#prob_47
+#p sortdown_2(["1","2","3","4"])
+#p sortdown_ints(["5","6","7","8"])
+#p permute_string("9753")
+#p permute_int(1234)
 
 
 
