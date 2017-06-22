@@ -74,5 +74,113 @@ function largestPrimeFactor(n) {
 	return working_prime;
 }
 
-largestPrimeFactor(600851475143);
+function problem3 () {
+	return largestPrimeFactor(600851475143);
+}
 
+function stringRay(string) {
+	var array = [];
+	for (i = 0 ; i < string.length; i++) {
+		array.push(string[i]);
+	}   
+	return array;
+}
+
+function isPalindrome(number) {
+	var n_string = number.toString();
+	var n_array = stringRay(n_string);
+	var rev_array = n_array.slice().reverse();
+	var palindrome = true;
+	for (i = 0; i <= n_array.length/2 ; i++) {
+		if (rev_array[i] !== n_array[i]) {
+			palindrome = false;
+		}
+
+	}
+	return palindrome;
+}
+
+function largestPalindromeProduct(max) {
+	var largest = 0;
+	for (j = 0; j < max; j++) {
+		for (k = 0; k < max; k++) {
+			var big = max - j;
+			var small = max - k;
+			if ((big * small) < largest) {
+				
+				break;
+			} 
+			else if (isPalindrome(big * small)) {
+				largest = big * small;
+			}
+		}
+	}
+	return largest;
+}
+
+function problem4() {
+   return largestPalindromeProduct(9999);
+}
+
+/*
+problem 5 solved logically. 
+If you multiply out the highest powers of each prime under a number, then you are sure to be divisible by everything else.
+And if you aren't multiplying by those highest powers, then you're not. So it's necessary and sufficient.
+It can be done programatically (and should be for higher numbers) but for now we can just use what we know:
+2 (16)
+3 (9)
+5 
+7 
+11
+13
+17
+19
+*/
+
+
+function problem5() {
+	return 16 * 9 * 5 * 7 * 11 * 13 * 17 * 19;
+}
+
+
+function sumSquare(max) {
+	var sum = 0;
+	for (i = 1; i <= max; i++) {
+		sum+= i * i;
+	}
+	return sum;
+}
+
+function squareSum(max) {
+	var sum = 0; 
+	for (i = 1; i <= max; i++) {
+		sum+= i;
+	}
+	return sum * sum;
+}
+
+function problem6() {
+	return squareSum(100) - sumSquare(100);
+}
+
+function nthPrime(n) {
+	not_primes = notPrime(n*20);
+	var num_primes = 0;
+	for (i = 0; i<not_primes.length - 1; i++) {
+		if (not_primes[i]) {
+			continue
+		}
+		else {
+			num_primes++;
+			if (num_primes === n) {
+				return i;
+			} 
+		}
+	}
+}
+
+function problem7(){
+	return nthPrime(10001);
+}
+
+console.log(problem7());
